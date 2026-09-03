@@ -46,10 +46,10 @@
       --ink-faint:#78828d;
       --paper:#10151d;
       --paper-raised:#161d27;
-      --glass-bg:rgba(255,255,255,0.055);
-      --glass-bg-strong:rgba(255,255,255,0.09);
-      --glass-border:rgba(255,255,255,0.14);
-      --glass-highlight:rgba(255,255,255,0.16);
+      --glass-bg:rgba(255,255,255,0.07);
+      --glass-bg-strong:rgba(255,255,255,0.11);
+      --glass-border:rgba(255,255,255,0.32);
+      --glass-highlight:rgba(255,255,255,0.22);
       --shadow:rgba(0,0,0,0.55);
       --brass:#d3a35c;
       --brass-strong:#e8bd78;
@@ -73,10 +73,10 @@
     --ink-faint:#78828d;
     --paper:#10151d;
     --paper-raised:#161d27;
-    --glass-bg:rgba(255,255,255,0.055);
-    --glass-bg-strong:rgba(255,255,255,0.09);
-    --glass-border:rgba(255,255,255,0.14);
-    --glass-highlight:rgba(255,255,255,0.16);
+    --glass-bg:rgba(255,255,255,0.07);
+    --glass-bg-strong:rgba(255,255,255,0.11);
+    --glass-border:rgba(255,255,255,0.32);
+    --glass-highlight:rgba(255,255,255,0.22);
     --shadow:rgba(0,0,0,0.55);
     --brass:#d3a35c;
     --brass-strong:#e8bd78;
@@ -288,14 +288,12 @@
   .stat-row .bar-track{height:16px;border-radius:5px;background:var(--glass-border);overflow:hidden;position:relative;}
   .stat-row .bar-fill{
     height:100%;border-radius:5px;
-    background-color:var(--role-color, var(--ink-faint));
-    background-image:linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0) 55%);
-    opacity:0.82;
-    box-shadow:0 0 10px -2px var(--role-color, transparent);
-    transition:opacity .15s ease, width .2s ease, box-shadow .15s ease;
+    /* background-color is set inline per role, as a plain literal hex - no CSS variables,
+       no theme indirection, nothing that can silently fail to resolve. */
+    transition:width .2s ease, box-shadow .15s ease;
   }
-  .stat-row.active .bar-fill{opacity:1;box-shadow:0 0 14px -1px var(--role-color, var(--brass));}
-  .stat-row.active{background:var(--glass-bg-strong);border-color:var(--role-color, var(--brass));}
+  .stat-row.active .bar-fill{box-shadow:0 0 0 1px rgba(255,255,255,0.55) inset, 0 0 10px -1px rgba(0,0,0,0.4);}
+  .stat-row.active{background:var(--glass-bg-strong);border-color:var(--brass);}
   .stat-row .val{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);text-align:right;font-variant-numeric:tabular-nums;}
   .stats-hint{font-size:11px;color:var(--ink-faint);margin-top:8px;font-style:italic;}
 
@@ -1044,7 +1042,15 @@
   }
 
   var ROLE_SHAPE = { "Admin":"rect", "Erin":"cut", "Client":"pill", "Monday.com":"hex", "Jackie":"para" };
-  var ROLE_COLOR = { "Admin":"--stage1", "Erin":"--stage4", "Client":"--stage5", "Monday.com":"--stage2", "Jackie":"--stage3" };
+  // Plain literal hex colors, one per role - no CSS variables, no theme lookups, nothing that
+  // can fail to resolve. Same colors in light and dark mode, chosen to read clearly on both.
+  var ROLE_COLOR_HEX = {
+    "Admin":"#4f7fb5",
+    "Monday.com":"#3f9d80",
+    "Erin":"#9a6bc4",
+    "Client":"#c9583f",
+    "Jackie":"#c78a2e"
+  };
   var ROLE_TOTALS = [
     {label:"Admin (Dan/staff)", value:32, role:"Admin"},
     {label:"Monday.com automation", value:10, role:"Monday.com"},
@@ -1056,28 +1062,6 @@
   var stepIndex = {};
   var stepsByStage = {};
   var state = { selected: new Map() };
-
-  function resolveThemeVar(name){
-    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  }
-  // Custom properties that reference other custom properties (var(--role-color, var(--stageN)))
-  // don't reliably re-resolve on some renderers when the theme attribute flips. So instead of
-  // pointing --role-color at "var(--stageN)", we bake in the resolved literal color and refresh
-  // every baked-in color whenever the theme changes.
-  function refreshRoleColors(){
-    Object.keys(statRowEls || {}).forEach(function(role){
-      var varName = ROLE_COLOR[role];
-      if (varName) statRowEls[role].style.setProperty('--role-color', resolveThemeVar(varName));
-    });
-    Object.keys(cardEls || {}).forEach(function(key){
-      var n = Number(key);
-      var card = cardEls[n].card;
-      if (!card.classList.contains('role-active')) return;
-      var meta = stepIndex[n];
-      var varName = meta && ROLE_COLOR[meta.role];
-      if (varName) card.style.setProperty('--role-color', resolveThemeVar(varName));
-    });
-  }
 
   (function initTheme(){
     var root = document.documentElement;
@@ -1095,7 +1079,6 @@
         label.textContent = 'Dark';
         btn.setAttribute('aria-label','Switch to dark theme');
       }
-      refreshRoleColors();
     }
     var saved = null;
     try { saved = localStorage.getItem('ejl-docket-theme'); } catch(e){}
@@ -1170,16 +1153,15 @@
       row.type = 'button';
       row.className = 'stat-row';
       row.setAttribute('aria-pressed','false');
-      if (ROLE_COLOR[r.role]) row.style.setProperty('--role-color', resolveThemeVar(ROLE_COLOR[r.role]));
+      var hex = ROLE_COLOR_HEX[r.role] || '#8a94a3';
       row.innerHTML =
         '<span class="lbl">'+r.label+'</span>'+
-        '<span class="bar-track"><span class="bar-fill" style="width:'+ (r.value/max*100) +'%"></span></span>'+
+        '<span class="bar-track"><span class="bar-fill" style="width:'+ (r.value/max*100) +'%;background-color:'+hex+';"></span></span>'+
         '<span class="val">'+r.value+'</span>';
       row.addEventListener('click', function(){ setRoleFilter(roleFilter === r.role ? null : r.role); });
       el.appendChild(row);
       statRowEls[r.role] = row;
     });
-    refreshRoleColors();
   })();
 
   function setRoleFilter(role){
@@ -1196,7 +1178,7 @@
       var active = role && meta && meta.role === role;
       cardEls[n].card.classList.toggle('role-dimmed', dim);
       cardEls[n].card.classList.toggle('role-active', active);
-      if (active && ROLE_COLOR[role]) cardEls[n].card.style.setProperty('--role-color', resolveThemeVar(ROLE_COLOR[role]));
+      if (active) cardEls[n].card.style.setProperty('--role-color', ROLE_COLOR_HEX[role] || '#8a94a3');
     });
     STAGES.forEach(function(stage){
       var laneEl = document.getElementById('col-'+stage.id);
