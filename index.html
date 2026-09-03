@@ -1674,11 +1674,20 @@
 
   function tryPasscode(){
     var val = gatePass.value.trim();
-    if (!val) return;
+    gateError.hidden = true;
+    if (!val){
+      gateError.textContent = 'Enter the passcode first.';
+      gateError.hidden = false;
+      gatePass.focus();
+      return;
+    }
     gateSubmit.disabled = true;
+    gateSubmit.textContent = 'Checking...';
     sb.rpc('check_passcode', { input: val }).then(function(res){
       gateSubmit.disabled = false;
+      gateSubmit.textContent = 'Enter the docket';
       if (res.error || res.data !== true){
+        gateError.textContent = "That's not it - check with Ron and try again.";
         gateError.hidden = false;
         gatePass.value = '';
         gatePass.focus();
@@ -1687,6 +1696,12 @@
       try { sessionStorage.setItem('ejl-docket-authed', '1'); } catch(e){}
       gateScrim.hidden = true;
       startApp();
+    }).catch(function(err){
+      gateSubmit.disabled = false;
+      gateSubmit.textContent = 'Enter the docket';
+      gateError.textContent = 'Could not reach the server (network/firewall issue). Try again, or a different network.';
+      gateError.hidden = false;
+      console.error('Passcode check failed:', err);
     });
   }
   gateSubmit.addEventListener('click', tryPasscode);
