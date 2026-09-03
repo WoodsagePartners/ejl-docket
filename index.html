@@ -1523,14 +1523,30 @@
 
   }
 
-  function addCustomStep(stage, role, text, order){
-    var n = Date.now();
+  function nextStepN(){
+    var max = 0;
+    Object.keys(stepsByStage).forEach(function(sid){
+      (stepsByStage[sid] || []).forEach(function(st){ if (st.n > max) max = st.n; });
+    });
+    return max + 1;
+  }
+
+  function addCustomStep(stage, role, text, order, attempt){
+    var n = nextStepN() + (attempt || 0);
     if (order == null) order = 0;
     sb.from('steps').insert({
       n: n, stage_id: stage.id, role: role, text: text,
       is_milestone: false, is_custom: true, order_val: order, added_by: getName()
     }).select().then(function(res){
-      if (res.error){ alert('Could not save that step: ' + res.error.message); return; }
+      if (res.error){
+        // Number collided with another card added at the same moment - try the next one.
+        if (res.error.code === '23505' && (attempt || 0) < 25){
+          addCustomStep(stage, role, text, order, (attempt || 0) + 1);
+          return;
+        }
+        alert('Could not save that step: ' + res.error.message);
+        return;
+      }
     });
   }
 
