@@ -302,8 +302,10 @@
   .tt-grand{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
   .tt-grand-label{font-size:12.5px;color:var(--ink-dim);}
   .tt-grand-label.savings{color:var(--brass-strong);}
+  .tt-grand-label.future{color:var(--ink);}
   .tt-grand-val{font-family:var(--font-mono);font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;}
   .tt-grand-val.savings{color:var(--brass-strong);}
+  .tt-grand-val.future{color:#3fae6a;}
   .tt-bar{height:8px;border-radius:5px;background:var(--glass-border);overflow:hidden;margin-top:1px;}
   .tt-bar-fill{height:100%;border-radius:5px;background:var(--brass);width:0%;transition:width .2s ease;}
 
@@ -951,7 +953,8 @@
     <div class="time-tally">
       <div class="stats-title">Juice vs. squeeze</div>
       <div class="tt-grand"><span class="tt-grand-label">Current state</span><span class="tt-grand-val" id="grandDur">0 d</span></div>
-      <div class="tt-grand"><span class="tt-grand-label savings">Future state</span><span class="tt-grand-val savings" id="grandSav">0 d</span></div>
+      <div class="tt-grand"><span class="tt-grand-label savings">Estimated savings</span><span class="tt-grand-val savings" id="grandSav">0 d</span></div>
+      <div class="tt-grand"><span class="tt-grand-label future">Future state</span><span class="tt-grand-val future" id="grandFuture">0 d</span></div>
       <div class="tt-bar"><div class="tt-bar-fill" id="grandBar"></div></div>
       <p class="stats-hint">Enter days on any card below. Everyone sees these live.</p>
     </div>
@@ -1260,8 +1263,10 @@
         refs.barEl.style.width = (t.dur > 0 ? Math.min(100, t.sav / t.dur * 100) : 0) + '%';
       }
     });
+    var totalFuture = Math.max(0, totalDur - totalSav);
     document.getElementById('grandDur').textContent = fmtDays(totalDur) + ' d';
     document.getElementById('grandSav').textContent = fmtDays(totalSav) + ' d';
+    document.getElementById('grandFuture').textContent = fmtDays(totalFuture) + ' d';
     document.getElementById('grandBar').style.width = (totalDur > 0 ? Math.min(100, totalSav / totalDur * 100) : 0) + '%';
   }
 
