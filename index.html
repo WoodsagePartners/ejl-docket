@@ -285,8 +285,9 @@
   .stat-row.active{background:var(--glass-bg-strong);border-color:var(--brass);}
   .stat-row .lbl{font-size:12.5px;color:var(--ink-dim);}
   .stat-row.active .lbl{color:var(--ink);font-weight:600;}
-  .stat-row .bar-track{height:16px;border-radius:5px;background:var(--glass-border);overflow:hidden;position:relative;}
+  .stat-row .bar-track{height:16px;border-radius:5px;background:var(--glass-border);overflow:hidden;position:relative;display:block;}
   .stat-row .bar-fill{
+    display:block;
     height:100%;border-radius:5px;
     /* background-color is set inline per role, as a plain literal hex - no CSS variables,
        no theme indirection, nothing that can silently fail to resolve. */
@@ -317,6 +318,15 @@
     margin-bottom:34px;
     overflow-x:auto;
     padding-bottom:4px;
+    /* Full-bleed, matching .canvas-wrap below it, so their left/right edges line up
+       instead of leaving a mismatched sliver of page background between them. */
+    width:100vw;
+    max-width:100vw;
+    margin-left:calc(50% - 50vw);
+    margin-right:calc(50% - 50vw);
+    padding-left:calc(50vw - 50%);
+    padding-right:calc(50vw - 50%);
+    box-sizing:border-box;
   }
   .macro-box{
     flex:1;
