@@ -258,9 +258,10 @@
   .stat-row.active{background:var(--glass-bg-strong);border-color:var(--brass);}
   .stat-row .lbl{font-size:12.5px;color:var(--ink-dim);}
   .stat-row.active .lbl{color:var(--ink);font-weight:600;}
-  .stat-row .bar-track{height:9px;border-radius:5px;background:var(--glass-border);overflow:hidden;}
-  .stat-row .bar-fill{height:100%;border-radius:5px;background:var(--ink-faint);opacity:0.55;transition:background .15s ease, opacity .15s ease;}
-  .stat-row.active .bar-fill{background:var(--brass);opacity:1;}
+  .stat-row .bar-track{height:14px;border-radius:5px;background:var(--glass-border);overflow:hidden;}
+  .stat-row .bar-fill{height:100%;border-radius:5px;background:var(--role-color, var(--ink-faint));opacity:0.55;transition:background .15s ease, opacity .15s ease, width .2s ease;}
+  .stat-row.active .bar-fill{opacity:1;box-shadow:0 0 0 1px color-mix(in srgb, var(--role-color, var(--brass)) 60%, transparent);}
+  .stat-row.active{background:var(--glass-bg-strong);border-color:var(--role-color, var(--brass));}
   .stat-row .val{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);text-align:right;font-variant-numeric:tabular-nums;}
   .stats-hint{font-size:11px;color:var(--ink-faint);margin-top:8px;font-style:italic;}
 
@@ -273,7 +274,8 @@
   .tt-bar{height:8px;border-radius:5px;background:var(--glass-border);overflow:hidden;margin-top:1px;}
   .tt-bar-fill{height:100%;border-radius:5px;background:var(--brass);width:0%;transition:width .2s ease;}
 
-  .card.role-dimmed{opacity:0.28;filter:saturate(0.5);transition:opacity .15s ease, filter .15s ease;}
+  .card.role-dimmed{opacity:0.22;filter:saturate(0.4);transition:opacity .15s ease, filter .15s ease, box-shadow .15s ease;}
+  .card.role-active{box-shadow:0 0 0 2px var(--role-color, var(--brass)), drop-shadow(0 6px 10px var(--shadow));transition:box-shadow .15s ease;}
   .lane.role-dimmed .lane-head{opacity:0.4;transition:opacity .15s ease;}
 
   .macro{
@@ -366,50 +368,51 @@
     position:sticky;
     left:0;
     z-index:5;
-    width:216px;
+    width:236px;
     flex:none;
-    padding:16px 16px 14px;
+    padding:10px 13px 10px;
     background:
       linear-gradient(120deg, color-mix(in srgb, var(--stage-color) 22%, transparent), transparent 75%),
       var(--paper-raised);
     border-right:1px solid var(--glass-border);
     display:flex;
     flex-direction:column;
-    gap:10px;
+    justify-content:center;
+    gap:5px;
   }
   .lane-head .idx{
     font-family:var(--font-mono);
-    font-size:11px;
+    font-size:9.5px;
     color:var(--stage-color);
     font-weight:600;
   }
   .lane-head h2{
     font-family:var(--font-display);
-    font-size:16.5px;
+    font-size:13.5px;
     font-weight:600;
-    margin:2px 0 0;
-    line-height:1.18;
+    margin:0;
+    line-height:1.15;
     text-wrap:balance;
   }
   .lane-head .count{
     font-family:var(--font-mono);
-    font-size:10.5px;
+    font-size:9.5px;
     color:var(--ink-faint);
     white-space:nowrap;
   }
   .lane-tally{
-    margin-top:auto;
-    padding-top:10px;
+    margin-top:2px;
+    padding-top:6px;
     border-top:1px solid var(--glass-border);
     display:flex;
     flex-direction:column;
-    gap:5px;
+    gap:3px;
   }
   .lane-tally .lt-row{display:flex;justify-content:space-between;align-items:baseline;gap:6px;}
-  .lane-tally .lt-label{font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-faint);}
-  .lane-tally .lt-val{font-family:var(--font-mono);font-size:12.5px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .lane-tally .lt-label{font-family:var(--font-mono);font-size:8.5px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-faint);}
+  .lane-tally .lt-val{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
   .lane-tally .lt-val.savings{color:var(--brass-strong);}
-  .lane-tally .lt-bar{height:5px;border-radius:3px;background:var(--glass-border);overflow:hidden;margin-top:1px;}
+  .lane-tally .lt-bar{height:4px;border-radius:3px;background:var(--glass-border);overflow:hidden;margin-top:1px;}
   .lane-tally .lt-bar-fill{height:100%;background:var(--brass);width:0%;transition:width .2s ease;}
 
   .lane-steps{
@@ -509,7 +512,14 @@
     font-size:12.8px;
     line-height:1.38;
     color:var(--ink);
+    cursor:text;
+    border-radius:4px;
+    padding:1px 3px;
+    margin:0 -3px;
+    outline:none;
   }
+  .card .task:hover{background:var(--glass-bg-strong);}
+  .card .task:focus{background:var(--paper);box-shadow:0 0 0 2px var(--brass);cursor:text;}
   .card.is-milestone .task{
     font-family:var(--font-mono);
     font-weight:600;
@@ -879,6 +889,10 @@
       <label class="field-label" for="nameInput">Sealing as</label>
       <input id="nameInput" class="name-input" type="text" placeholder="your name" maxlength="40">
       <button class="pill-btn" id="openDrawerBtn">Shortlist <span id="toolbarCount">(0)</span></button>
+      <button class="pill-btn theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark theme">
+        <span id="themeToggleIcon" aria-hidden="true">&#9789;</span>
+        <span id="themeToggleLabel">Dark</span>
+      </button>
     </div>
   </div>
 
@@ -961,6 +975,7 @@
   STAGES.forEach(function(s){ stageById[s.id] = s; });
 
   var ROLE_SHAPE = { "Admin":"rect", "Erin":"cut", "Client":"pill", "Monday.com":"hex", "Jackie":"para" };
+  var ROLE_COLOR = { "Admin":"--stage1", "Erin":"--stage4", "Client":"--stage5", "Monday.com":"--stage2", "Jackie":"--stage3" };
   var ROLE_TOTALS = [
     {label:"Admin (Dan/staff)", value:32, role:"Admin"},
     {label:"Monday.com automation", value:10, role:"Monday.com"},
@@ -972,6 +987,33 @@
   var stepIndex = {};
   var stepsByStage = {};
   var state = { selected: new Map() };
+
+  (function initTheme(){
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    var icon = document.getElementById('themeToggleIcon');
+    var label = document.getElementById('themeToggleLabel');
+    function apply(theme){
+      root.setAttribute('data-theme', theme);
+      if (theme === 'dark'){
+        icon.innerHTML = '&#9728;';
+        label.textContent = 'Light';
+        btn.setAttribute('aria-label','Switch to light theme');
+      } else {
+        icon.innerHTML = '&#9789;';
+        label.textContent = 'Dark';
+        btn.setAttribute('aria-label','Switch to dark theme');
+      }
+    }
+    var saved = null;
+    try { saved = localStorage.getItem('ejl-docket-theme'); } catch(e){}
+    apply(saved === 'dark' ? 'dark' : 'light');
+    btn.addEventListener('click', function(){
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      apply(next);
+      try { localStorage.setItem('ejl-docket-theme', next); } catch(e){}
+    });
+  })();
 
   function getName(){
     var el = document.getElementById('nameInput');
@@ -996,6 +1038,7 @@
       row.type = 'button';
       row.className = 'stat-row';
       row.setAttribute('aria-pressed','false');
+      if (ROLE_COLOR[r.role]) row.style.setProperty('--role-color', 'var('+ROLE_COLOR[r.role]+')');
       row.innerHTML =
         '<span class="lbl">'+r.label+'</span>'+
         '<span class="bar-track"><span class="bar-fill" style="width:'+ (r.value/max*100) +'%"></span></span>'+
@@ -1017,7 +1060,10 @@
       var n = Number(key);
       var meta = stepIndex[n];
       var dim = role && meta && meta.role !== role;
+      var active = role && meta && meta.role === role;
       cardEls[n].card.classList.toggle('role-dimmed', dim);
+      cardEls[n].card.classList.toggle('role-active', active);
+      if (active && ROLE_COLOR[role]) cardEls[n].card.style.setProperty('--role-color', 'var('+ROLE_COLOR[role]+')');
     });
     STAGES.forEach(function(stage){
       var laneEl = document.getElementById('col-'+stage.id);
@@ -1154,6 +1200,20 @@
     }, 400);
   }
 
+  var textDebounce = {};
+  function updateStepText(n, text, immediate){
+    var st = findStepByN(n);
+    if (st) st.text = text;
+    if (stepIndex[n]) stepIndex[n].text = text;
+    clearTimeout(textDebounce[n]);
+    var save = function(){
+      sb.from('steps').update({ text: text }).eq('n', n).then(function(res){
+        if (res.error) console.error(res.error);
+      });
+    };
+    if (immediate) save(); else textDebounce[n] = setTimeout(save, 600);
+  }
+
   function buildStepCard(stage, st){
     var outer = document.createElement('div');
     outer.className = 'step-outer';
@@ -1166,7 +1226,7 @@
     card.setAttribute('aria-pressed','false');
     card.innerHTML =
       '<div class="row1"><span class="step-n">#'+st.n+'</span><span class="role-tag">'+st.role+(st.custom ? ' <span class="new-badge">new</span>' : '')+'</span></div>'+
-      '<div class="task">'+st.text+'</div>'+
+      '<div class="task" contenteditable="true" spellcheck="false">'+st.text+'</div>'+
       '<div class="card-meta">'+
         '<div class="meta-field"><label>Days</label><input type="number" class="dur-input" min="0" step="0.25" placeholder="-"></div>'+
         '<div class="meta-field savings"><label>Saves</label><input type="number" class="sav-input" min="0" step="0.25" placeholder="-"></div>'+
@@ -1181,6 +1241,23 @@
     var meta = card.querySelector('.card-meta');
     meta.addEventListener('click', function(e){ e.stopPropagation(); });
     meta.addEventListener('keydown', function(e){ e.stopPropagation(); });
+
+    var taskEl = card.querySelector('.task');
+    taskEl.addEventListener('click', function(e){ e.stopPropagation(); });
+    taskEl.addEventListener('keydown', function(e){
+      e.stopPropagation();
+      if (e.key === 'Enter'){ e.preventDefault(); taskEl.blur(); }
+      if (e.key === 'Escape'){ taskEl.textContent = st.text; taskEl.blur(); }
+    });
+    taskEl.addEventListener('input', function(){
+      updateStepText(st.n, taskEl.textContent);
+    });
+    taskEl.addEventListener('blur', function(){
+      var cleaned = taskEl.textContent.trim();
+      if (cleaned === ''){ cleaned = st.text; taskEl.textContent = cleaned; }
+      if (taskEl.textContent !== cleaned) taskEl.textContent = cleaned;
+      updateStepText(st.n, cleaned, true);
+    });
 
     var durInput = card.querySelector('.dur-input');
     var savInput = card.querySelector('.sav-input');
@@ -1601,8 +1678,10 @@
       if (ce){
         var durInput = ce.card.querySelector('.dur-input');
         var savInput = ce.card.querySelector('.sav-input');
+        var taskEl = ce.card.querySelector('.task');
         if (durInput && document.activeElement !== durInput) durInput.value = st.duration != null ? st.duration : '';
         if (savInput && document.activeElement !== savInput) savInput.value = st.savings != null ? st.savings : '';
+        if (taskEl && document.activeElement !== taskEl) taskEl.textContent = st.text;
       }
     }
     recomputeAll();
