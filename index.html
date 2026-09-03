@@ -1794,19 +1794,32 @@
   function handleStepsChange(payload){
     if (payload.eventType === 'DELETE'){
       var oldRow = payload.old;
-      var stage0 = stageById[oldRow.stage_id];
-      var arr0 = stepsByStage[oldRow.stage_id];
+      // Realtime only guarantees the primary key (n) on DELETE, not the rest of the row,
+      // so find which stage actually held this step rather than trusting oldRow.stage_id.
+      var stageIdFound = oldRow.stage_id;
+      if (!stageIdFound){
+        Object.keys(stepsByStage).some(function(sid){
+          var found = (stepsByStage[sid] || []).some(function(s){ return s.n === oldRow.n; });
+          if (found) stageIdFound = sid;
+          return found;
+        });
+      }
+      var stage0 = stageById[stageIdFound];
+      var arr0 = stepsByStage[stageIdFound];
       if (arr0){
         var di = arr0.findIndex(function(s){ return s.n === oldRow.n; });
         if (di > -1) arr0.splice(di, 1);
       }
+      delete cardEls[oldRow.n];
+      delete stepIndex[oldRow.n];
       if (stage0){
         renderLane(stage0);
         updateLaneCount(stage0);
         applySelectionToDOM();
-        recomputeAll();
         if (roleFilter) setRoleFilter(roleFilter);
       }
+      recomputeAll();
+      if (drawer.classList.contains('open')) renderDrawer();
       return;
     }
     var row = payload.new;
