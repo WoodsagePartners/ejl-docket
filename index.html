@@ -565,10 +565,10 @@
   .card .task:hover{background:var(--glass-bg-strong);}
   .card .task:focus{background:var(--paper);box-shadow:0 0 0 2px var(--brass);cursor:text;}
   .card.is-milestone .task{
-    font-family:var(--font-mono);
-    font-weight:600;
-    letter-spacing:0.03em;
-    font-size:12px;
+    font-family:var(--font-body);
+    font-weight:800;
+    letter-spacing:0.01em;
+    font-size:12.8px;
   }
   .new-badge{
     font-family:var(--font-mono);
@@ -1419,49 +1419,6 @@
     return outer;
   }
 
-  function buildAddCard(stage, lastOrder){
-    var wrap = document.createElement('div');
-    wrap.className = 'step-outer add-outer';
-
-    var ghost = document.createElement('button');
-    ghost.type = 'button';
-    ghost.className = 'add-card';
-    ghost.innerHTML = '<span class="add-plus">+</span><span class="add-label">Add step</span>';
-
-    var form = document.createElement('div');
-    form.className = 'add-form';
-    form.hidden = true;
-    var roleOptions = Object.keys(ROLE_SHAPE).map(function(r){ return '<option value="'+r+'">'+r+'</option>'; }).join('');
-    form.innerHTML =
-      '<select class="add-role">'+roleOptions+'</select>'+
-      '<textarea class="add-text" rows="3" placeholder="What happens in this step?"></textarea>'+
-      '<div class="add-actions"><button type="button" class="add-save">Save</button><button type="button" class="add-cancel">Cancel</button></div>';
-
-    wrap.appendChild(ghost);
-    wrap.appendChild(form);
-
-    ghost.addEventListener('click', function(){
-      ghost.hidden = true;
-      form.hidden = false;
-      form.querySelector('.add-text').focus();
-    });
-    function resetForm(){
-      form.querySelector('.add-text').value = '';
-      form.hidden = true;
-      ghost.hidden = false;
-    }
-    form.querySelector('.add-cancel').addEventListener('click', resetForm);
-    form.querySelector('.add-save').addEventListener('click', function(){
-      var role = form.querySelector('.add-role').value;
-      var text = form.querySelector('.add-text').value.trim();
-      if (!text){ form.querySelector('.add-text').focus(); return; }
-      addCustomStep(stage, role, text, computeInsertOrder(lastOrder, null));
-      resetForm();
-    });
-
-    return wrap;
-  }
-
   function computeInsertOrder(orderBefore, orderAfter){
     if (orderBefore == null && orderAfter == null) return 0;
     if (orderBefore == null) return orderAfter - 1;
@@ -1542,7 +1499,6 @@
       stepsWrap.appendChild(buildConnector(stage, st.order, nextOrder));
     });
 
-    stepsWrap.appendChild(buildAddCard(stage, list.length ? list[list.length - 1].order : null));
   }
 
   function addCustomStep(stage, role, text, order){
