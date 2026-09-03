@@ -1306,6 +1306,7 @@
   function rowToStep(row){
     return {
       n: row.n,
+      id: row.id,
       role: row.role,
       text: row.text,
       milestone: !!row.is_milestone,
@@ -1794,24 +1795,21 @@
   function handleStepsChange(payload){
     if (payload.eventType === 'DELETE'){
       var oldRow = payload.old;
-      // Realtime only guarantees the primary key (n) on DELETE, not the rest of the row,
-      // so find which stage actually held this step rather than trusting oldRow.stage_id.
-      var stageIdFound = oldRow.stage_id;
-      if (!stageIdFound){
-        Object.keys(stepsByStage).some(function(sid){
-          var found = (stepsByStage[sid] || []).some(function(s){ return s.n === oldRow.n; });
-          if (found) stageIdFound = sid;
-          return found;
-        });
-      }
+      // Realtime only guarantees the primary key on DELETE (the "id" uuid column here,
+      // not "n" and not stage_id), so find the step by id across every loaded stage.
+      var stageIdFound = null;
+      var removedN = null;
+      Object.keys(stepsByStage).some(function(sid){
+        var arr = stepsByStage[sid] || [];
+        var i = arr.findIndex(function(s){ return s.id === oldRow.id; });
+        if (i > -1){ stageIdFound = sid; removedN = arr[i].n; arr.splice(i, 1); return true; }
+        return false;
+      });
       var stage0 = stageById[stageIdFound];
-      var arr0 = stepsByStage[stageIdFound];
-      if (arr0){
-        var di = arr0.findIndex(function(s){ return s.n === oldRow.n; });
-        if (di > -1) arr0.splice(di, 1);
+      if (removedN != null){
+        delete cardEls[removedN];
+        delete stepIndex[removedN];
       }
-      delete cardEls[oldRow.n];
-      delete stepIndex[oldRow.n];
       if (stage0){
         renderLane(stage0);
         updateLaneCount(stage0);
