@@ -1655,7 +1655,10 @@
     });
   }
 
+  var appStarted = false;
   function startApp(){
+    if (appStarted) return;
+    appStarted = true;
     refetchAllSteps().then(refetchAllCandidates);
     sb.channel('public:steps')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'steps' }, handleStepsChange)
@@ -1699,7 +1702,10 @@
     }).catch(function(err){
       gateSubmit.disabled = false;
       gateSubmit.textContent = 'Enter the docket';
-      gateError.textContent = 'Could not reach the server (network/firewall issue). Try again, or a different network.';
+      var isNetworkErr = err instanceof TypeError && /fetch|network/i.test(err.message || '');
+      gateError.textContent = isNetworkErr
+        ? 'Could not reach the server (network/firewall issue). Try again, or a different network.'
+        : 'Something went wrong opening the docket. Refresh the page and try again.';
       gateError.hidden = false;
       console.error('Passcode check failed:', err);
     });
