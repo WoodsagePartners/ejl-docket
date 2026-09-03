@@ -546,6 +546,31 @@
     text-transform:uppercase;
     color:var(--ink-faint);
   }
+  .card .row1-right{
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .card .del-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:16px;
+    height:16px;
+    line-height:1;
+    padding:0;
+    border:none;
+    border-radius:4px;
+    background:none;
+    color:var(--ink-faint);
+    font-size:14px;
+    font-family:var(--font-body);
+    cursor:pointer;
+    opacity:0;
+    transition:opacity .12s ease, background .12s ease, color .12s ease;
+  }
+  .card:hover .del-btn{opacity:0.7;}
+  .card .del-btn:hover{opacity:1;background:rgba(196,68,58,0.15);color:var(--seal-red,#c4443a);}
   .card .task{
     font-size:12.8px;
     line-height:1.38;
@@ -1338,7 +1363,12 @@
     card.setAttribute('role','button');
     card.setAttribute('aria-pressed','false');
     card.innerHTML =
-      '<div class="row1"><span class="step-n">#'+st.n+'</span><span class="role-tag">'+st.role+(st.custom ? ' <span class="new-badge">new</span>' : '')+'</span></div>'+
+      '<div class="row1"><span class="step-n">#'+st.n+'</span>'+
+        '<span class="row1-right">'+
+          '<span class="role-tag">'+st.role+(st.custom ? ' <span class="new-badge">new</span>' : '')+'</span>'+
+          '<button type="button" class="del-btn" title="Delete this step" aria-label="Delete this step">&times;</button>'+
+        '</span>'+
+      '</div>'+
       '<div class="task" contenteditable="true" spellcheck="false">'+st.text+'</div>'+
       '<div class="card-meta">'+
         '<div class="meta-field"><label>Days</label><input type="number" class="dur-input" min="0" step="0.25" placeholder="-"></div>'+
@@ -1350,6 +1380,17 @@
       if (e.target !== card) return;
       if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleStep(st.n); }
     });
+
+    var delBtn = card.querySelector('.del-btn');
+    delBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if (!confirm('Delete step #'+st.n+'? This removes it for everyone.')) return;
+      sb.from('steps').delete().eq('n', st.n).then(function(res){
+        if (res.error) alert('Could not delete that step: ' + res.error.message);
+      });
+      sb.from('candidates').delete().eq('step_n', st.n).then(function(){});
+    });
+    delBtn.addEventListener('keydown', function(e){ e.stopPropagation(); });
 
     var meta = card.querySelector('.card-meta');
     meta.addEventListener('click', function(e){ e.stopPropagation(); });
