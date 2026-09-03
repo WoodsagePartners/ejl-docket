@@ -571,6 +571,18 @@
   }
   .card:hover .del-btn{opacity:0.7;}
   .card .del-btn:hover{opacity:1;background:rgba(196,68,58,0.15);color:var(--seal-red,#c4443a);}
+  .card .del-btn.armed{
+    opacity:1;
+    width:auto;
+    padding:0 5px;
+    font-size:10px;
+    font-family:var(--font-mono);
+    font-weight:700;
+    letter-spacing:0.02em;
+    background:var(--seal-red,#c4443a);
+    color:#fff;
+  }
+  .card .del-btn.armed:hover{background:var(--seal-red,#c4443a);color:#fff;}
   .card .task{
     font-size:12.8px;
     line-height:1.38;
@@ -1383,15 +1395,33 @@
     });
 
     var delBtn = card.querySelector('.del-btn');
+    var armTimer = null;
+    function disarm(){
+      clearTimeout(armTimer);
+      armTimer = null;
+      delBtn.classList.remove('armed');
+      delBtn.textContent = String.fromCharCode(215); // ×
+      delBtn.title = 'Delete this step';
+    }
     delBtn.addEventListener('click', function(e){
       e.stopPropagation();
-      if (!confirm('Delete step #'+st.n+'? This removes it for everyone.')) return;
+      if (!armTimer){
+        // First click: arm it (no native confirm() - it blocks the main thread and
+        // can silently fail inside the Vercel preview iframe). Click again to confirm.
+        delBtn.classList.add('armed');
+        delBtn.textContent = String.fromCharCode(10003); // check mark
+        delBtn.title = 'Click again to permanently delete this step';
+        armTimer = setTimeout(disarm, 3000);
+        return;
+      }
+      disarm();
       sb.from('steps').delete().eq('n', st.n).then(function(res){
         if (res.error) alert('Could not delete that step: ' + res.error.message);
       });
       sb.from('candidates').delete().eq('step_n', st.n).then(function(){});
     });
     delBtn.addEventListener('keydown', function(e){ e.stopPropagation(); });
+    delBtn.addEventListener('blur', disarm);
 
     var meta = card.querySelector('.card-meta');
     meta.addEventListener('click', function(e){ e.stopPropagation(); });
